@@ -1,0 +1,10 @@
+feature_name,display_name,description,type,unit
+koi_fwm_sdec,KOI Declination (FWM),Flux-weighted declination of Kepler Object of Interest,numeric,degrees
+dec,Declination,Angular position in the sky (latitude),numeric,degrees
+koi_incl,Orbital Inclination,Angle between orbital plane and line of sight,numeric,degrees
+koi_period,Orbital Period,Time for one complete orbit,numeric,days
+koi_duration,Transit Duration,Time the planet blocks the star's light,numeric,hours
+koi_depth,Transit Depth,Fractional decrease in star brightness during transit,numeric,ppm
+koi_ror,Radius Ratio,Ratio of planet radius to stellar radius,numeric,
+koi_teq,Equilibrium Temperature,Theoretical surface temperature assuming no atmosphere,numeric,K
+koi_dor,Distance Ratio,Semi-major axis divided by stellar radius,numeric,

@@ -1,0 +1,20 @@
+feature_name,display_name,description,type,unit
+tran_flag,Transit Flag,Indicates if transit method was used for detection,binary,
+rv_flag,Radial Velocity Flag,Indicates if radial velocity method was used,binary,
+pl_orbper,Orbital Period,Time taken for one complete orbit around the star,numeric,days
+pl_rade,Planet Radius (Earth),Radius of the planet in Earth radii,numeric,R⊕
+pl_radj,Planet Radius (Jupiter),Radius of the planet in Jupiter radii,numeric,RJ
+pl_tranmid,Transit Midpoint,Julian date of the transit midpoint,numeric,JD
+pl_ratdor,Distance Ratio,Ratio of planet-star distance to stellar radius,numeric,
+st_teff,Stellar Temperature,Effective temperature of the host star,numeric,K
+st_rad,Stellar Radius,Radius of the host star,numeric,R☉
+pl_eqt,Equilibrium Temperature,Theoretical equilibrium temperature of the planet,numeric,K
+sy_snum,Number of Stars,Number of stars in the planetary system,numeric,
+sy_pnum,Number of Planets,Number of planets in the system,numeric,
+sy_tmagerr1,TESS Magnitude Error,Uncertainty in TESS magnitude measurement,numeric,mag
+sy_tmag,TESS Magnitude,Brightness as measured by TESS,numeric,mag
+sy_kepmag,Kepler Magnitude,Brightness as measured by Kepler,numeric,mag
+ra,Right Ascension,Angular position in the sky (longitude),numeric,degrees
+sy_jmag,J-Band Magnitude,Brightness in near-infrared J-band,numeric,mag
+sy_dist,Distance,Distance from Earth to the system,numeric,parsecs
+st_rotp,Stellar Rotation Period,Time for one complete rotation of the host star,numeric,days
