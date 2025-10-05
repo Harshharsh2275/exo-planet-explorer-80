@@ -17,32 +17,30 @@ const Index = () => {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-accent/20 via-transparent to-transparent" />
       
-      {/* Stars effect */}
-      <div className="fixed inset-0">
-        {[...Array(50)].map((_, i) => (
+      {/* Animated Stars effect */}
+      <div className="fixed inset-0 overflow-hidden">
+        {[...Array(100)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-foreground/40 rounded-full animate-glow-pulse"
+            className="absolute w-1 h-1 bg-foreground/60 rounded-full animate-star-move"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${15 + Math.random() * 30}s`,
             }}
           />
         ))}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex min-h-screen items-center justify-between px-8 lg:px-16 gap-12 pt-20">
-        {/* Left side - Planet */}
-        <div className="flex-1 flex items-center justify-start animate-fade-in">
-          <SpacePlanet />
-        </div>
+      {/* Background Planet */}
+      <div className="fixed left-10 bottom-10 opacity-30 pointer-events-none">
+        <SpacePlanet />
+      </div>
 
-        {/* Right side - Form */}
-        <div className="flex-1 max-w-md animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <ExoplanetForm onSubmit={() => setDialogOpen(true)} />
-        </div>
+      {/* Centered Content */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-8 lg:px-16 pt-20">
+        <ExoplanetForm onSubmit={() => setDialogOpen(true)} />
       </div>
 
       {/* Feature Input Dialog */}

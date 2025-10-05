@@ -102,6 +102,12 @@ export default {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "star-move": {
+          "0%": { transform: "translateY(0) translateX(0)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(-100vh) translateX(50px)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +116,7 @@ export default {
         "glow-pulse": "glow-pulse 3s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
         "fade-in": "fade-in 0.6s ease-out",
+        "star-move": "star-move 20s linear infinite",
       },
     },
   },
