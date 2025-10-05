@@ -2,12 +2,16 @@ import { useState } from "react";
 import { SpacePlanet } from "@/components/SpacePlanet";
 import { ExoplanetForm } from "@/components/ExoplanetForm";
 import { FeatureInputDialog } from "@/components/FeatureInputDialog";
+import { Header } from "@/components/Header";
 
 const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Header */}
+      <Header />
+      
       {/* Cosmic background effects */}
       <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-muted/30" />
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
@@ -29,7 +33,7 @@ const Index = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex min-h-screen items-center justify-between px-8 lg:px-16 gap-12">
+      <div className="relative z-10 flex min-h-screen items-center justify-between px-8 lg:px-16 gap-12 pt-20">
         {/* Left side - Planet */}
         <div className="flex-1 flex items-center justify-start animate-fade-in">
           <SpacePlanet />
@@ -43,16 +47,6 @@ const Index = () => {
 
       {/* Feature Input Dialog */}
       <FeatureInputDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-
-      {/* Title overlay */}
-      <div className="fixed top-8 left-8 animate-fade-in">
-        <h1 className="text-5xl font-bold bg-gradient-cosmic bg-clip-text text-transparent">
-          Kshitij
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Discover habitable worlds beyond our solar system
-        </p>
-      </div>
 
       {/* Info Section */}
       <div className="relative z-10 w-full px-8 lg:px-16 py-20">
