@@ -3,12 +3,16 @@ import { SpacePlanet } from "@/components/SpacePlanet";
 import { ExoplanetForm } from "@/components/ExoplanetForm";
 import { FeatureInputDialog } from "@/components/FeatureInputDialog";
 import { Header } from "@/components/Header";
+import StarryCursorFollower from "@/components/StarryCursorFollower";
+import PlanetParticles from "@/components/PlanetParticles";
 
 const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [parameters, setParameters] = useState({model: "", dataset: ""});
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* <StarryCursorFollower /> */}
       {/* Header */}
       <Header />
       
@@ -35,16 +39,19 @@ const Index = () => {
 
       {/* Background Planet */}
       <div className="fixed left-10 bottom-10 opacity-30 pointer-events-none">
-        <SpacePlanet />
+        {/* <SpacePlanet /> */}
+        <PlanetParticles />
       </div>
 
       {/* Centered Content */}
       <div className="relative z-10 flex min-h-screen items-center justify-center px-8 lg:px-16 pt-20">
-        <ExoplanetForm onSubmit={() => setDialogOpen(true)} />
+        <ExoplanetForm onSubmit={(model, dataset) => {
+          setParameters({model, dataset});
+          setDialogOpen(true)}} />
       </div>
 
       {/* Feature Input Dialog */}
-      <FeatureInputDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <FeatureInputDialog open={dialogOpen} params={parameters} onOpenChange={setDialogOpen} />
 
       {/* Info Section */}
       <div className="relative z-10 w-full px-8 lg:px-16 py-20">

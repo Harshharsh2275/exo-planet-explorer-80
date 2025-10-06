@@ -3,22 +3,26 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Check, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const Results = () => {
   const navigate = useNavigate();
   const [features, setFeatures] = useState<any>(null);
-  const [prediction, setPrediction] = useState<boolean | null>(null);
+  const [prediction, setPrediction] = useState<Record<any, any> | null>(null);
   const [confidence, setConfidence] = useState<number>(0);
 
   useEffect(() => {
-    const storedFeatures = localStorage.getItem("exoplanetFeatures");
-    if (!storedFeatures) {
+    const storedFeatures = localStorage.getItem("features");
+    const storedRes = localStorage.getItem("result")
+    if (!storedFeatures || !storedRes) {
       navigate("/");
       return;
     }
 
     const parsedFeatures = JSON.parse(storedFeatures);
+    const parsedRes = JSON.parse(storedRes);
     setFeatures(parsedFeatures);
+    setPrediction(parsedRes);
 
     // Simulate prediction (in real app, this would be an API call)
     setTimeout(() => {
@@ -29,8 +33,8 @@ const Results = () => {
         parseFloat(parsedFeatures.planetRadius) > 0.5 &&
         parseFloat(parsedFeatures.planetRadius) < 2.5;
       
-      setPrediction(isHabitable);
-      setConfidence(Math.random() * 30 + 70); // 70-100% confidence
+      // setPrediction(isHabitable);
+      setConfidence(parsedRes.CANDIDATE); // 70-100% confidence
     }, 1500);
   }, [navigate]);
 
@@ -66,31 +70,47 @@ const Results = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-1">
-                    {prediction ? "Potentially Habitable" : "Not Habitable"}
+                    {prediction.CONFIRMED > 50 || prediction.CANDIDATE > 50 ? "Potentially Exoplanet": "Not an Exoplanet"}
                   </h2>
                   <p className="text-muted-foreground">
                     Confidence: {confidence.toFixed(1)}%
                   </p>
                 </div>
+                
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="p-4 bg-muted/20">
-                  <h3 className="text-sm text-muted-foreground mb-1">Orbital Period</h3>
-                  <p className="text-lg font-semibold">{features.orbitalPeriod} days</p>
-                </Card>
-                <Card className="p-4 bg-muted/20">
-                  <h3 className="text-sm text-muted-foreground mb-1">Planet Radius</h3>
-                  <p className="text-lg font-semibold">{features.planetRadius} R⊕</p>
-                </Card>
-                <Card className="p-4 bg-muted/20">
-                  <h3 className="text-sm text-muted-foreground mb-1">Equilibrium Temp</h3>
-                  <p className="text-lg font-semibold">{features.equilibriumTemp} K</p>
-                </Card>
-                <Card className="p-4 bg-muted/20">
-                  <h3 className="text-sm text-muted-foreground mb-1">Planet Mass</h3>
-                  <p className="text-lg font-semibold">{features.planetMass} M⊕</p>
-                </Card>
+              {/* Prediction confidence display */}
+<div className="space-y-3 mt-4">
+  {Object.keys(prediction).map((score, i) => (
+    <Card key={i} className="p-3 bg-muted/30">
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-sm font-medium text-foreground">{score}</span>
+        <span className="text-sm text-muted-foreground">{prediction[score]}%</span>
+      </div>
+      <Progress
+        value={Number(prediction[score])}
+        className="h-2 bg-muted-foreground/20"
+      />
+    </Card>
+  ))}
+</div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <h3 className="text-2xl font-bold mb-1">
+                    User Entered Datapoints
+                  </h3>
+            {Object.keys(features).length > 0 && (
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(features).map(([key, value], i) => (
+                  <Card key={i} className="p-4 bg-muted/20">
+                    <h3 className="text-sm text-muted-foreground mb-1">{key}</h3>
+                    <p className="text-lg font-semibold">
+                      {value ? `${value.toString().slice(0, 4)} units` : <span className="text-muted-foreground">Not entered</span>}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            )}
               </div>
 
               <div className="p-4 bg-muted/10 rounded-lg border border-primary/10">

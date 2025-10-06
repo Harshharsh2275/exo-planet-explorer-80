@@ -40,3 +40,44 @@
 .read-the-docs {
   color: #888;
 }
+
+/* -------------------- Cursor Follower -------------------- */
+.cursor-follower {
+  position: fixed;
+  width: 30px; /* Size of the follower */
+  height: 30px;
+  border: 2px solid #a855f7; /* Border color: Purple */
+  border-radius: 50%;
+  /* Blur for a soft, glowing effect */
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.8), 0 0 5px rgba(255, 255, 255, 0.4);
+  pointer-events: none; /* Ensures the follower doesn't block clicks */
+  z-index: 1000;
+  /* Smooth transition for movement */
+  transition: transform 0.1s ease-out;
+  /* Initial state: hidden until mouse moves */
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Inner element for a central star effect */
+.follower-inner-star {
+  width: 5px;
+  height: 5px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 5px #fff;
+  animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}

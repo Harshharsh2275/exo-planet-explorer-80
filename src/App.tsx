@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
+import StarryCursorFollower from "./components/StarryCursorFollower";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+      {/* <StarryCursorFollower /> */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/results" element={<Results />} />

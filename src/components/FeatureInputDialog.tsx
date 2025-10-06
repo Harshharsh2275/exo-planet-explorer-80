@@ -1,47 +1,109 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
+
+interface FeatureDetail {
+  name: string;
+  display_name: string;
+  description: string;
+  type: string;
+  unit: string;
+  default_value: number;
+}
 
 interface FeatureInputDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  params: { model: string; dataset: string };
 }
 
-export const FeatureInputDialog = ({ open, onOpenChange }: FeatureInputDialogProps) => {
+export const FeatureInputDialog = ({ open, onOpenChange, params }: FeatureInputDialogProps) => {
   const navigate = useNavigate();
-  const [features, setFeatures] = useState({
-    orbitalPeriod: "",
-    planetRadius: "",
-    stellarMagnitude: "",
-    equilibriumTemp: "",
-    insolationFlux: "",
-    planetMass: "",
-  });
+  const [features, setFeatures] = useState<Record<string, string>>({});
+  const [requiredFeatures, setRequiredFeatures] = useState<FeatureDetail[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !params.model || !params.dataset) return;
+    
+    setLoading(true);
+    setRequiredFeatures([]); // Reset features
+    setFeatures({}); // Reset form
+    
+    axios
+      .get(`${import.meta.env.VITE_BASE_URL}/get_features`, {headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, params})
+      .then((r) => {
+        console.log("API Response:", r.data); // Debug log
+        
+        if (r.data.error) {
+          toast.error(r.data.error);
+          return;
+        }
+        
+        const featureList = r.data.feature_details || [];
+        console.log("Feature List:", featureList); // Debug log
+        
+        if (featureList.length === 0) {
+          toast.error("No features found for this model");
+          return;
+        }
+        
+        setRequiredFeatures(featureList);
+        
+        // Initialize form with default values or empty strings
+        const initial = Object.fromEntries(
+          featureList.map((f: FeatureDetail) => [
+            f.name, 
+            f.default_value ? String(f.default_value) : ""
+          ])
+        );
+        setFeatures(initial);
+      })
+      .catch((error) => {
+        console.error("Error fetching features:", error); // Debug log
+        toast.error("Failed to fetch features");
+      })
+      .finally(() => setLoading(false));
+  }, [open, params.model, params.dataset]);
+
+  const handleChange = (fieldName: string, value: string) => {
+    setFeatures((prev) => ({ ...prev, [fieldName]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate all fields are filled
-    const allFilled = Object.values(features).every(val => val.trim() !== "");
+    const allFilled = Object.values(features).every((val) => val.trim() !== "");
     if (!allFilled) {
       toast.error("Please fill in all feature values");
       return;
     }
 
-    // Store data and navigate to results
-    localStorage.setItem("exoplanetFeatures", JSON.stringify(features));
+    // Convert string values to numbers for API
+    const numericFeatures = Object.fromEntries(
+      Object.entries(features).map(([key, val]) => [key, parseFloat(val)])
+    );
+
+    axios.post(import.meta.env.VITE_BASE_URL+"predict", {
+      dataset: params.dataset,
+      model: params.model,
+      features
+    }).then((r) => {
+      localStorage.setItem('result', JSON.stringify(r.data.confidence_scores))
+    })
+
+    // Store for results page
+    localStorage.setItem('features', JSON.stringify(features))
+    
     toast.success("Processing prediction...");
     onOpenChange(false);
     navigate("/results");
-  };
-
-  const handleChange = (field: keyof typeof features, value: string) => {
-    setFeatures(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -51,116 +113,68 @@ export const FeatureInputDialog = ({ open, onOpenChange }: FeatureInputDialogPro
           <DialogTitle className="text-2xl bg-gradient-cosmic bg-clip-text text-transparent">
             Enter Exoplanet Features
           </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Model: {params.model?.toUpperCase()} | Dataset: {params.dataset?.toUpperCase()}
+          </p>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="orbitalPeriod" className="text-foreground">
-                Orbital Period (days)
-              </Label>
-              <Input
-                id="orbitalPeriod"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 365.25"
-                value={features.orbitalPeriod}
-                onChange={(e) => handleChange("orbitalPeriod", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="planetRadius" className="text-foreground">
-                Planet Radius (Earth radii)
-              </Label>
-              <Input
-                id="planetRadius"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 1.0"
-                value={features.planetRadius}
-                onChange={(e) => handleChange("planetRadius", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stellarMagnitude" className="text-foreground">
-                Stellar Magnitude
-              </Label>
-              <Input
-                id="stellarMagnitude"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 4.83"
-                value={features.stellarMagnitude}
-                onChange={(e) => handleChange("stellarMagnitude", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="equilibriumTemp" className="text-foreground">
-                Equilibrium Temperature (K)
-              </Label>
-              <Input
-                id="equilibriumTemp"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 288"
-                value={features.equilibriumTemp}
-                onChange={(e) => handleChange("equilibriumTemp", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="insolationFlux" className="text-foreground">
-                Insolation Flux (Earth flux)
-              </Label>
-              <Input
-                id="insolationFlux"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 1.0"
-                value={features.insolationFlux}
-                onChange={(e) => handleChange("insolationFlux", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="planetMass" className="text-foreground">
-                Planet Mass (Earth masses)
-              </Label>
-              <Input
-                id="planetMass"
-                type="number"
-                step="0.01"
-                placeholder="e.g., 1.0"
-                value={features.planetMass}
-                onChange={(e) => handleChange("planetMass", e.target.value)}
-                className="bg-input/50 border-primary/30"
-              />
-            </div>
+        
+        {loading ? (
+          <div className="text-center text-muted-foreground py-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            Loading features...
           </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="cosmic" className="flex-1">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Predict
-            </Button>
+        ) : requiredFeatures.length === 0 ? (
+          <div className="text-center text-muted-foreground py-6">
+            No features available. Please try again.
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {requiredFeatures.map((feature, idx) => (
+                <div className="space-y-2" key={feature.name || idx}>
+                  <Label htmlFor={feature.name} className="text-foreground font-medium">
+                    {feature.display_name}
+                    {feature.unit && (
+                      <span className="text-muted-foreground text-xs ml-1">
+                        ({feature.unit})
+                      </span>
+                    )}
+                  </Label>
+                  {feature.description && (
+                    <p className="text-xs text-muted-foreground">{feature.description}</p>
+                  )}
+                  <Input
+                    id={feature.name}
+                    type="number"
+                    step="any"
+                    placeholder={`Enter ${feature.display_name} ${feature.default_value ? `(default: ${feature.default_value})` : ''}`}
+                    value={features[feature.name] ?? ""}
+                    onChange={(e) => handleChange(feature.name, e.target.value)}
+                    className="bg-input/50 border-primary/30"
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center pt-4 border-t border-primary/20">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                className="border-primary/30"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-primary text-white hover:bg-primary/80"
+              >
+                Generate Prediction
+              </Button>
+            </div>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

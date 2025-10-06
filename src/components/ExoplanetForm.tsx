@@ -1,77 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Rocket, Brain, Network, TrendingUp, Cpu } from "lucide-react";
+import axios from "axios"
 
 interface ExoplanetFormProps {
-  onSubmit: () => void;
+  onSubmit: (modelName: string, datasetName: string) => void;
 }
-
-const modelDescriptions = {
-  "random-forest": {
-    icon: Brain,
-    title: "Random Forest Classifier",
-    description: "An ensemble learning method that constructs multiple decision trees during training and outputs the mode of their predictions.",
-    accuracy: "94.2%",
-    features: [
-      "Handles non-linear relationships effectively",
-      "Resistant to overfitting",
-      "Works well with high-dimensional data",
-      "Provides feature importance rankings"
-    ]
-  },
-  "neural-network": {
-    icon: Network,
-    title: "Deep Neural Network",
-    description: "A multi-layered artificial neural network that learns complex patterns through backpropagation and gradient descent optimization.",
-    accuracy: "96.8%",
-    features: [
-      "Captures complex non-linear patterns",
-      "Adaptive feature learning",
-      "High accuracy on large datasets",
-      "Handles missing data gracefully"
-    ]
-  },
-  "gradient-boost": {
-    icon: TrendingUp,
-    title: "Gradient Boosting",
-    description: "A powerful ensemble technique that builds trees sequentially, where each new tree corrects errors made by previous trees.",
-    accuracy: "95.5%",
-    features: [
-      "Excellent predictive performance",
-      "Handles mixed data types",
-      "Built-in feature selection",
-      "Minimal data preprocessing needed"
-    ]
-  },
-  "svm": {
-    icon: Cpu,
-    title: "Support Vector Machine",
-    description: "A supervised learning algorithm that finds the optimal hyperplane to separate different classes in high-dimensional space.",
-    accuracy: "92.7%",
-    features: [
-      "Effective in high-dimensional spaces",
-      "Memory efficient",
-      "Versatile kernel functions",
-      "Robust to outliers"
-    ]
-  }
-};
 
 export const ExoplanetForm = ({ onSubmit }: ExoplanetFormProps) => {
   const [model, setModel] = useState("");
   const [dataset, setDataset] = useState("");
+  const [modelDescriptions, setModelDescriptions] = useState({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (model && dataset) {
-      onSubmit();
+      onSubmit(model, dataset);
     }
   };
 
-  const selectedModel = model ? modelDescriptions[model as keyof typeof modelDescriptions] : null;
+  useEffect(() => {
+      axios.get(import.meta.env.VITE_BASE_URL+"models").then((r) => setModelDescriptions(r.data.models));
+  }, [])
+
+  const selectedModel = model ? Object.keys(modelDescriptions).map(md => {
+    if(modelDescriptions[md].model_type == model) return modelDescriptions[md];
+    return null
+  }) : null;
 
   return (
     <div className="flex gap-8 max-w-6xl w-full animate-fade-in">
@@ -96,10 +54,13 @@ export const ExoplanetForm = ({ onSubmit }: ExoplanetFormProps) => {
                 <SelectValue placeholder="Choose a model" />
               </SelectTrigger>
               <SelectContent className="bg-card/95 backdrop-blur-xl border-border z-50">
-                <SelectItem value="random-forest">Random Forest</SelectItem>
-                <SelectItem value="neural-network">Neural Network</SelectItem>
-                <SelectItem value="gradient-boost">Gradient Boosting</SelectItem>
-                <SelectItem value="svm">Support Vector Machine</SelectItem>
+              { Object.keys(modelDescriptions).map((model, idx) => {
+                console.log(model)
+                return (
+                  <SelectItem value={modelDescriptions[model].model_type} key={idx}>{modelDescriptions[model].title}</SelectItem>
+                )
+              }) }
+                
               </SelectContent>
             </Select>
           </div>
@@ -113,10 +74,8 @@ export const ExoplanetForm = ({ onSubmit }: ExoplanetFormProps) => {
                 <SelectValue placeholder="Choose a dataset" />
               </SelectTrigger>
               <SelectContent className="bg-card/95 backdrop-blur-xl border-border z-50">
-                <SelectItem value="kepler">Kepler Mission Data</SelectItem>
-                <SelectItem value="tess">TESS Mission Data</SelectItem>
-                <SelectItem value="combined">Combined Dataset</SelectItem>
-                <SelectItem value="custom">Custom Dataset</SelectItem>
+                <SelectItem value="k2pandc">Kepler 2 Mission Data</SelectItem>
+                <SelectItem value="cumi">Kepler 1 Mission Data</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -136,26 +95,30 @@ export const ExoplanetForm = ({ onSubmit }: ExoplanetFormProps) => {
 
       {/* Right Side - Model Description */}
       <Card className="flex-1 p-8 bg-card/40 backdrop-blur-xl border-accent/20 shadow-cosmic">
-        {selectedModel ? (
+        {selectedModel ? 
+        selectedModel.map(sm => {
+          if(sm != null) {
+            // console.log(sm);
+            return (
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl bg-primary/20 flex items-center justify-center">
-                <selectedModel.icon className="w-8 h-8 text-primary" />
+                <sm.icon className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-foreground">{selectedModel.title}</h3>
-                <p className="text-sm text-accent">Accuracy: {selectedModel.accuracy}</p>
+                <h3 className="text-2xl font-bold text-foreground">{sm.title}</h3>
+                <p className="text-sm text-accent">Accuracy: {sm.accuracy}</p>
               </div>
             </div>
 
             <p className="text-muted-foreground leading-relaxed">
-              {selectedModel.description}
+              {sm.description}
             </p>
 
             <div className="space-y-3">
               <h4 className="text-lg font-semibold text-foreground">Key Features:</h4>
               <ul className="space-y-2">
-                {selectedModel.features.map((feature, index) => (
+                {sm.features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
                     <span className="text-muted-foreground text-sm">{feature}</span>
@@ -171,7 +134,9 @@ export const ExoplanetForm = ({ onSubmit }: ExoplanetFormProps) => {
               </p>
             </div>
           </div>
-        ) : (
+        ) 
+          }
+        }) : (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
             <div className="w-20 h-20 rounded-full bg-muted/20 flex items-center justify-center">
               <Brain className="w-10 h-10 text-muted-foreground/50" />
